@@ -9,8 +9,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
 
-
-
 # Connexion à la base de données PostgreSQL
 def ConnectAndQuery(requet, params):
     try:
@@ -148,39 +146,39 @@ def accueil():
 
     # Créer une fonction pour générer la carte
     # Fonction pour créer la carte interactive
-    def create_map(data, location_column, popup_column):
-        # Créer une carte centrée sur les coordonnées moyennes
-        map = folium.Map(location=[data[location_column].mean(), data[location_column + 1].mean()], zoom_start=10)
+    # def create_map(data, location_column, popup_column):
+    #     # Créer une carte centrée sur les coordonnées moyennes
+    #     map = folium.Map(location=[data[location_column].mean(), data[location_column + 1].mean()], zoom_start=10)
 
-        # Ajouter des marqueurs pour chaque ligne du DataFrame
-        for index, row in data.iterrows():
-            # Vérifier si le type de point est sélectionné dans la sidebar
-            if show_centres and row['NOM_CENTRE'] != 'NaN':
-                folium.Marker([row[location_column], row["LONGITUDE"]], popup=row[popup_column], icon=folium.Icon(color='blue')).add_to(map)
-            if show_pop and row['NOM_POP'] != 'NaN':
-                folium.Marker([row["LATUTUDE_POP"], row["LONGITUDE_POP"]], popup=row[popup_column], icon=folium.Icon(color='green')).add_to(map)
+    #     # Ajouter des marqueurs pour chaque ligne du DataFrame
+    #     for index, row in data.iterrows():
+    #         # Vérifier si le type de point est sélectionné dans la sidebar
+    #         if show_centres and row['NOM_CENTRE'] != 'NaN':
+    #             folium.Marker([row[location_column], row["LONGITUDE"]], popup=row[popup_column], icon=folium.Icon(color='blue')).add_to(map)
+    #         if show_pop and row['NOM_POP'] != 'NaN':
+    #             folium.Marker([row["LATUTUDE_POP"], row["LONGITUDE_POP"]], popup=row[popup_column], icon=folium.Icon(color='green')).add_to(map)
 
-        # Afficher la carte
-        st.write(map)
+    #     # Afficher la carte
+    #     st.write(map)
 
-    # Charger les données
-    data = df1
+    # # Charger les données
+    # data = df1
 
-    # Sidebar pour sélectionner le type de point à afficher
-    show_centres = st.sidebar.checkbox("Afficher les centres")
-    show_pop = st.sidebar.checkbox("Afficher les POP")
+    # # Sidebar pour sélectionner le type de point à afficher
+    # show_centres = st.sidebar.checkbox("Afficher les centres")
+    # show_pop = st.sidebar.checkbox("Afficher les POP")
 
-    # Vérifier si au moins un type de point est sélectionné
-    if show_centres or show_pop:
-        # Vérifier si les colonnes de coordonnées des centres et des POP sont présentes
-        if 'LATITUDE' in data.columns and 'LONGITUDE' in data.columns and 'LATITUDE_POP' in data.columns and 'LONGITUDE_POP' in data.columns:
-            # Créer la carte interactive
-            create_map(data, 'LATITUDE', 'NOM_CENTRE')  # Pour les centres
-            create_map(data, 'LATITUDE_POP', 'NOM_POP')  # Pour les POP
-        else:
-            st.error("Les colonnes de coordonnées ne sont pas présentes dans les données.")
-    else:
-        st.warning("Veuillez sélectionner au moins un type de point à afficher dans la sidebar.")
+    # # Vérifier si au moins un type de point est sélectionné
+    # if show_centres or show_pop:
+    #     # Vérifier si les colonnes de coordonnées des centres et des POP sont présentes
+    #     if 'LATITUDE' in data.columns and 'LONGITUDE' in data.columns and 'LATITUDE_POP' in data.columns and 'LONGITUDE_POP' in data.columns:
+    #         # Créer la carte interactive
+    #         create_map(data, 'LATITUDE', 'NOM_CENTRE')  # Pour les centres
+    #         create_map(data, 'LATITUDE_POP', 'NOM_POP')  # Pour les POP
+    #     else:
+    #         st.error("Les colonnes de coordonnées ne sont pas présentes dans les données.")
+    # else:
+    #     st.warning("Veuillez sélectionner au moins un type de point à afficher dans la sidebar.")
 
     # if geojson_data is not None:
     #     folium.GeoJson(geojson_data).add_to(my_map)
