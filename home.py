@@ -1,5 +1,5 @@
 import streamlit as st
-import folium
+# import folium
 import json
 import psycopg2
 import pandas as pd
@@ -121,28 +121,58 @@ def accueil():
     geojson_data, df1, df = DfToGeoJson()
 
 
-    st.write(df1)
+    # 1. Répartition par centre de formation
+    nbre_centre = df1['NOM_CENTRE'].nunique()
+    nbre_apprenant = df['ID_APPRENANT'].nunique()
+    nbre_filiere = df['ID_FILIERE'].nunique()
+    nbre_diplome = df['ID_DIPLOME'].nunique()
+
+    # Création d'une disposition en grille pour les cartes
+    col1, col2, col3, col4 = st.columns(4)
+
+    # Carte 1 : Nombre de centres de formation
+    with col1:
+        st.write("Nombre de centres de formation")
+        st.write(nbre_centre)
+
+    # Carte 2 : Nombre total d'apprenants
+    with col2:
+        st.write("Nombre total d'apprenants")
+        st.write(nbre_apprenant)
+
+    # Carte 3 : Nombre total de filières
+    with col3:
+        st.write("Nombre total de filières")
+        st.write(nbre_filiere)
+
+    # Carte 4 : Nombre total de diplômes
+    with col4:
+        st.write("Nombre total de diplômes")
+        st.write(nbre_diplome)
+
+
+    st.write(df)
     # Créer une carte centrée sur les coordonnées moyennes
-    map1 = folium.Map(location=[df1.iloc[:, 4].mean(), df1.iloc[:, 5].mean()], zoom_start=7)
-    map2 = folium.Map(location=[df1.iloc[:, 6].mean(), df1.iloc[:, 7].mean()], zoom_start=7)
+    # map1 = folium.Map(location=[df1.iloc[:, 4].mean(), df1.iloc[:, 5].mean()], zoom_start=7)
+    # map2 = folium.Map(location=[df1.iloc[:, 6].mean(), df1.iloc[:, 7].mean()], zoom_start=7)
 
-    # Ajouter des marqueurs pour chaque ligne du DataFrame sur la carte map1
-    for index, row in df1.iterrows():
-        popup_text = f"<b>Nom du Centre:</b> {row.iloc[1]}<br><b>Nom du chef:</b> {row.iloc[2]}<br><b>Nom du POP:</b> {row.iloc[3]}<br>"
-        folium.Marker([row.iloc[4], row.iloc[5]], popup=folium.Popup(popup_text, max_width=300)).add_to(map1)
+    # # Ajouter des marqueurs pour chaque ligne du DataFrame sur la carte map1
+    # for index, row in df1.iterrows():
+    #     popup_text = f"<b>Nom du Centre:</b> {row.iloc[1]}<br><b>Nom du chef:</b> {row.iloc[2]}<br><b>Nom du POP:</b> {row.iloc[3]}<br>"
+    #     folium.Marker([row.iloc[4], row.iloc[5]], popup=folium.Popup(popup_text, max_width=300)).add_to(map1)
 
-    # Ajouter des marqueurs pour chaque ligne du DataFrame sur la carte map2
-    for index, row in df1.iterrows():
-        popup_text = f"<b>Nom du Centre:</b> {row.iloc[1]}<br><b>Nom du chef:</b> {row.iloc[2]}<br><b>Nom du POP:</b> {row.iloc[3]}<br>"
-        folium.Marker([row.iloc[6], row.iloc[7]], popup=folium.Popup(popup_text, max_width=300)).add_to(map2)
+    # # Ajouter des marqueurs pour chaque ligne du DataFrame sur la carte map2
+    # for index, row in df1.iterrows():
+    #     popup_text = f"<b>Nom du Centre:</b> {row.iloc[1]}<br><b>Nom du chef:</b> {row.iloc[2]}<br><b>Nom du POP:</b> {row.iloc[3]}<br>"
+    #     folium.Marker([row.iloc[6], row.iloc[7]], popup=folium.Popup(popup_text, max_width=300)).add_to(map2)
 
-    # Ajouter une légende pour différencier les deux types de points
-    folium.LayerControl().add_to(map1)
-    folium.LayerControl().add_to(map2)
+    # # Ajouter une légende pour différencier les deux types de points
+    # folium.LayerControl().add_to(map1)
+    # folium.LayerControl().add_to(map2)
 
-    # Afficher la carte avec Streamlit
-    folium_static(map1)
-    folium_static(map2)
+    # # Afficher la carte avec Streamlit
+    # folium_static(map1)
+    # folium_static(map2)
 
     # Créer une fonction pour générer la carte
     # Fonction pour créer la carte interactive
@@ -183,10 +213,10 @@ def accueil():
     # if geojson_data is not None:
     #     folium.GeoJson(geojson_data).add_to(my_map)
     #     folium_static(my_map)
-    # else:
+    # e1se1
     #     st.write("Erreur lors du chargement des données.")
     
-    col1, col2 = st.columns((2))  # Correction de la syntaxe pour définir le nombre de colonnes
+    col1, col2 = st.columns((1, 1)) 
 
     df["DT_INSERTION"] = pd.to_datetime(df["DT_INSERTION"])
 
@@ -196,6 +226,8 @@ def accueil():
 
     with col1:
         date1 = st.date_input("Start Date", startDate)
+
+    st.markdown("&nbsp;" * 10)
 
     with col2:
         date2 = st.date_input("End Date", endDate)
@@ -208,94 +240,109 @@ def accueil():
     # Définition des couleurs pour les barres du graphique
     couleurs = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
 
-    # Affichage du titre dans Streamlit
-    st.title('Répartition des apprenants par secteur')
+    with col1:
+        # Création du graphique interactif avec Plotly Express
+        fig = px.bar(df['LB_SECTEUR'].value_counts(), 
+                    x=df['LB_SECTEUR'].value_counts().index, 
+                    y=df['LB_SECTEUR'].value_counts(),
+                    labels={'x': 'Secteur', 'y': "Nombre d'apprenants"},
+                    title='Répartition des apprenants par secteur',
+                    color=df['LB_SECTEUR'].value_counts().index)
+        # Affichage du graphique interactif dans Streamlit
+        st.plotly_chart(fig)
+
+    with col2:
+        #st.title('Répartition des apprenants par sexe')
+        # Création du graphique interactif avec Plotly Express
+        fig = px.pie(df['SEXE'].value_counts(), 
+                    names=df['SEXE'].value_counts().index, 
+                    values=df['SEXE'].value_counts(),
+                    title='Répartition des apprenants par sexe',
+                    hole=0.5,
+                    color=df['SEXE'].unique(),  # Utilisation des couleurs définies
+                    color_discrete_map={k: c for k, c in zip(df['SEXE'].unique(), couleurs)})  # Attribution des couleurs
+
+        # Personnalisation du graphique
+        fig.update_traces(textinfo="label+percent", insidetextorientation="radial")
+
+        # Affichage du graphique interactif dans Streamlit
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col1:
+        #st.title('Répartition des apprenants par Diplôme')
+        # Création du graphique interactif avec Plotly Express
+        fig = px.bar(df['LB_DIPLOME'].value_counts(), 
+                    x=df['LB_DIPLOME'].value_counts().index, 
+                    y=df['LB_DIPLOME'].value_counts(),
+                    labels={'x': 'Diplôme', 'y': "Nombre d'apprenants"},
+                    title='Répartition des apprenants par diplôme',
+                    color=df['LB_DIPLOME'].unique(),  # Utilisation des couleurs définies
+                    color_discrete_map={k: c for k, c in zip(df['LB_DIPLOME'].unique(), couleurs)})  # Attribution des couleurs
+        # Affichage du graphique interactif dans Streamlit
+        st.plotly_chart(fig)
+
+   
+
+    
     # Création du graphique interactif avec Plotly Express
-    fig = px.bar(df['LB_SECTEUR'].value_counts(), 
-                x=df['LB_SECTEUR'].value_counts().index, 
-                y=df['LB_SECTEUR'].value_counts(),
-                labels={'x': 'Secteur', 'y': "Nombre d'apprenants"},
-                title='Répartition des apprenants par secteur',
-                color=df['LB_SECTEUR'].value_counts().index)
+    fig = px.bar(df['LB_FILIERE'].value_counts(), 
+                y=df['LB_FILIERE'].value_counts().index,  # Inversion de x et y pour afficher horizontalement
+                x=df['LB_FILIERE'].value_counts(),
+                labels={'x': "Nombre d'apprenants", 'y': 'Filière'},
+                title='Répartition des apprenants par filière',
+                color=df['LB_FILIERE'].unique(),  # Utilisation des couleurs définies
+                color_discrete_map={k: c for k, c in zip(df['LB_FILIERE'].unique(), couleurs)}) 
+
+    # Supprimer la légende
+    fig.update_layout(showlegend=False)
+
     # Affichage du graphique interactif dans Streamlit
     st.plotly_chart(fig)
 
-    st.title('Répartition des apprenants par sexe')
-    # Création du graphique interactif avec Plotly Express
-    fig = px.pie(df['SEXE'].value_counts(), 
-                names=df['SEXE'].value_counts().index, 
-                values=df['SEXE'].value_counts(),
-                title='Répartition des apprenants par sexe',
-                hole=0.5,
-                color=df['SEXE'].unique(),  # Utilisation des couleurs définies
-                color_discrete_map={k: c for k, c in zip(df['SEXE'].unique(), couleurs)})  # Attribution des couleurs
 
-    # Personnalisation du graphique
-    fig.update_traces(textinfo="label+percent", insidetextorientation="radial")
+    # Liste déroulante pour sélectionner la répartition
+    repartition_selectionnee = st.selectbox("Sélectionnez une répartition :", ["Diplôme", "Genre", "Secteur d'activité", "Filière"])
 
-    # Affichage du graphique interactif dans Streamlit
+    # Afficher les statistiques en fonction de la répartition sélectionnée
+    if repartition_selectionnee == "Diplôme":
+        fig = px.bar(df, x='LB_DIPLOME', color="LB_DIPLOME", title='Répartition par diplôme')
+    elif repartition_selectionnee == "Genre":
+        fig = px.bar(df, x='SEXE', color="SEXE", title='Répartition par genre')
+    elif repartition_selectionnee == "Secteur d'activité":
+        fig = px.bar(df, x='LB_SECTEUR', color="LB_SECTEUR",title='Répartition par secteur d\'activité')
+    elif repartition_selectionnee == "Filière":
+        fig = px.bar(df, x='LB_FILIERE', color="LB_FILIERE",title='Répartition par filière')
+    
+    # # Afficher les statistiques
+    # st.write(stats)
+    # Afficher le diagramme en barres  
     st.plotly_chart(fig, use_container_width=True)
 
-    st.title('Répartition des apprenants par Diplôme')
-    # Création du graphique interactif avec Plotly Express
-    fig = px.bar(df['LB_DIPLOME'].value_counts(), 
-                x=df['LB_DIPLOME'].value_counts().index, 
-                y=df['LB_DIPLOME'].value_counts(),
-                labels={'x': 'Diplôme', 'y': "Nombre d'apprenants"},
-                title='Répartition des apprenants par diplôme',
-                color=df['LB_DIPLOME'].unique(),  # Utilisation des couleurs définies
-                color_discrete_map={k: c for k, c in zip(df['LB_DIPLOME'].unique(), couleurs)})  # Attribution des couleurs
-    # Affichage du graphique interactif dans Streamlit
-    st.plotly_chart(fig)
+    col6, col7 = st.columns((1, 1)) 
 
-    st.title('Répartition des apprenants par Centre de Formation')
-    # Création du graphique interactif avec Plotly Express
-    fig = px.bar(df['NOM_CENTRE'].value_counts(), 
-                x=df['NOM_CENTRE'].value_counts().index, 
-                y=df['NOM_CENTRE'].value_counts(),
-                labels={'x': 'Centre de Formation', 'y': "Nombre d'apprenants"},
-                title='Répartition des apprenants par Centre de Formation',
-                color=df['NOM_CENTRE'].unique(),  # Utilisation des couleurs définies
-                color_discrete_map={k: c for k, c in zip(df['NOM_CENTRE'].unique(), couleurs)})  # Attribution des couleurs
+    with col6:
+        # Afficher le diagramme interactif en barres des secteurs en fonction des filières
+        st.subheader("Secteurs en fonction des filières")
+        fig = px.histogram(df, x='LB_FILIERE', color='LB_SECTEUR', title='Secteurs en fonction des filières')
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Affichage du graphique interactif dans Streamlit
-    st.plotly_chart(fig)
+    with col7:
+        # Afficher le diagramme interactif en barres de la répartition des diplômes des apprenants
+        st.subheader("Répartition des diplômes des apprenants")
+        fig = px.histogram(df, x='LB_DIPLOME', color="LB_DIPLOME", title='Répartition des diplômes des apprenants')
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Diagramme à barres des secteurs en fonction des filières
-    st.subheader("Secteurs en fonction des filières")
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.countplot(data=df, x="LB_FILIERE", hue="LB_SECTEUR", ax=ax)
-    plt.xticks(rotation=45, ha='right')
-    plt.xlabel("Filière")
-    plt.ylabel("Nombre d'apprenants")
-    st.pyplot(fig)
+    with col6:
+        # Afficher le diagramme interactif circulaire de la répartition des apprenants par sexe
+        st.subheader("Répartition des apprenants par secteur")
+        fig = px.pie(df, names='LB_SECTEUR', title='Répartition des apprenants par sexe')
+        st.plotly_chart(fig, use_container_width=True)
+    with col7:
+        # Afficher le diagramme interactif en barres du nombre d'apprenants par filière
+        st.subheader("Nombre d'apprenants par filière")
+        fig = px.histogram(df, x='LB_FILIERE', color="LB_FILIERE", title='Nombre d\'apprenants par filière')
+        st.plotly_chart(fig, use_container_width=True)
 
-    # Répartition des diplômes des apprenants
-    st.subheader("Répartition des diplômes des apprenants")
-    plt.figure(figsize=(10, 6))
-    sns.countplot(data=df, x="LB_DIPLOME")
-    plt.xticks(rotation=45, ha='right')
-    plt.xlabel("Diplôme")
-    plt.ylabel("Nombre d'apprenants")
-    fig2 = plt.gcf()
-    st.pyplot(fig2)
-
-    # Diagramme circulaire de la répartition des apprenants par sexe
-    st.subheader("Répartition des apprenants par sexe")
-    sexe_counts = df['SEXE'].value_counts()
-    fig3 = px.pie(names=sexe_counts.index, values=sexe_counts.values, hole=0.5)
-    fig3.update_traces(textinfo="label+percent", insidetextorientation="radial")
-    st.plotly_chart(fig3, use_container_width=True)
-
-    # Diagramme à barres des filières en fonction du nombre d'apprenants
-    st.subheader("Nombre d'apprenants par filière")
-    plt.figure(figsize=(10, 6))
-    sns.countplot(data=df, x="LB_DIPLOME")
-    plt.xticks(rotation=45, ha='right')
-    plt.xlabel("Diplôme")
-    plt.ylabel("Nombre d'apprenants")
-    fig4 = plt.gcf()
-    st.pyplot(fig4)
 
 
 # Fonction pour afficher la première page
@@ -315,6 +362,8 @@ def page_3():
 
 # Fonction principale pour gérer la navigation
 def main():
+
+    st.set_page_config(page_title='SWAST - Handover Delays',  layout='wide', page_icon=":bar_chart:")
     st.sidebar.title("Menu de navigation")
     pages = {
         "Accueil": accueil,
