@@ -1,5 +1,4 @@
 import streamlit as st
-from dashboard import Dashboard
 from static_formateur import static_formateur
 from static_apprenant import static_apprenant
 from home import accueil
