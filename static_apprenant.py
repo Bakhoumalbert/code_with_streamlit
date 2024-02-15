@@ -10,7 +10,7 @@ def static_apprenant():
     st.title("Statistiques des apprenants")
     st.write("Cette page représente les statisques sur les apprenants")
     
-    df1 = pd.read_csv("data/apprenant.csv")
+    df1 = pd.read_csv("apprenant.csv")
 
     st.write(df1)
 

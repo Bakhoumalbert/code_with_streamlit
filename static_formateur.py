@@ -6,7 +6,7 @@ import pandas as pd
 
 def static_formateur():
 
-    df2 = pd.read_csv("data/formateur.csv")
+    df2 = pd.read_csv("formateur.csv")
     # 1. Répartition par centre de formation
     nbre_formateur = df2['ID_FORMATEUR'].nunique()
     
