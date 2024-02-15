@@ -1,7 +1,9 @@
 import streamlit as st
 import folium
+import psycopg2
 import pandas as pd
 from streamlit_folium import folium_static
+import plotly.express as px
 
 
 def config_map(df):
