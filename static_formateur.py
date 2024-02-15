@@ -28,11 +28,7 @@ def static_formateur():
     with col2:
         st.date_input("End Date", endDate)
 
-    # with col1:
-    #     st.subheader("Filiere par secteur")
-    #     fig = px.bar(secteur_df2, y="LB_FILIERE", x="LB_SECTEUR", text="LB_FILIERE", template="seaborn")
-    #     st.plotly_chart(fig, use_container_width=True, height=100)
-        
+      
     # Définition des couleurs pour les barres du graphique
     couleurs = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
 
@@ -48,7 +44,6 @@ def static_formateur():
         st.plotly_chart(fig)
 
     with col2:
-        #st.title('Répartition des formateur par sexe')
         # Création du graphique interactif avec Plotly Express
         fig = px.pie(df2['SEXE'].value_counts(), 
                     names=df2['SEXE'].value_counts().index, 
