@@ -39,53 +39,11 @@ def ConnectAndQuery(requet, params):
         print("Erreur lors de la connexion à PostgreSQL:", error)
 
 
-def DfToGeoJson():
-    params = {
-        "dbname": "REFERENTIEL_MFPAI",
-        "user": "postgres",
-        "password": "ASB2101ab",
-        "host": "localhost",
-        "port": "5435"
-    }
-    requet_centre = "SELECT * FROM \"FORMATION_ODS\".\"ODS_CENTRE_FP\";"
-
-    try:
-        df = ConnectAndQuery(requet_centre, params)
-        if df is not None and not df.empty:
-            features = []
-
-            for _, row in df.iterrows():
-                feature = {
-                    "type": "Feature",
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [float(row['LONGITUDE']), float(row['LATITUDE'])]
-                    },
-                    "properties": {
-                        "ID_CENTRE_FP": row['ID_CENTRE_FP'],
-                        "NOM_CENTRE": row['NOM_CENTRE'],
-                        "NOM_POP": row['NOM_POP'],
-                        "NOM_CHEF": row['NOM_CHEF']
-                    }
-                }
-                features.append(feature)
-
-            geojson_data = {
-                "type": "FeatureCollection",
-                "features": features
-            }
-
-            return (geojson_data, df)
-
-        else:
-            st.error("Aucune donnée disponible.")
-            return None
-    except Exception as e:
-        st.error(f"Erreur lors de la récupération des données : {e}")
-        return None
 
 
 def config_map(df):
+
+    
     # Coordonnées centrales pour centrer la carte
     map_center = [df['LATITUDE'].mean(), df['LONGITUDE'].mean()]
 
@@ -154,7 +112,7 @@ def accueil():
     # st.subheader("Carte des centres")
     # my_map = folium.Map(location=[DEFAULT_LATITUDE, DEFAULT_LONGITUDE], zoom_start=6)
 
-    geojson_data, df = DfToGeoJson()
+    df = pd.read_csv("data/ods_centre.csv")
 
     # Affichage de la carte
     config_map(df)
@@ -245,34 +203,33 @@ def accueil():
     # Définition des couleurs pour les barres du graphique
     couleurs = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
 
-    with col1:
-        # Créer une liste déroulante pour sélectionner la population (POP)
-        selected_pop = st.selectbox("Sélectionner le POP", df['NOM_POP'].unique())
+    # Créer une liste déroulante pour sélectionner la population (POP)
+    selected_pop = st.selectbox("Sélectionner le POP", df['NOM_POP'].unique())
 
-        # Filtrer les données en fonction de la population sélectionnée
-        filtered_data = df[df['NOM_POP'] == selected_pop]
+    # Filtrer les données en fonction de la population sélectionnée
+    filtered_data = df[df['NOM_POP'] == selected_pop]
 
-        # Créer la carte Folium
-        m = folium.Map(location=[filtered_data['LATITUDE'].mean(), filtered_data['LONGITUDE'].mean()], zoom_start=12)
+    # Créer la carte Folium
+    m = folium.Map(location=[filtered_data['LATITUDE'].mean(), filtered_data['LONGITUDE'].mean()], zoom_start=10)
 
-        # Ajouter les emplacements des centres sur la carte
-        for index, row in filtered_data.iterrows():
-            popup_text = f"<b>Nom du Centre:</b> {row['NOM_CENTRE']}<br><b>Nom du chef:</b> {row['NOM_CHEF']}<br><b>Nom du POP:</b> {row['NOM_POP']}<br>"
-            folium.Marker(location=[row['LATITUDE'], row['LONGITUDE']], popup=folium.Popup(popup_text, max_width=300)).add_to(m)
+    # Ajouter les emplacements des centres sur la carte
+    for index, row in filtered_data.iterrows():
+        popup_text = f"<b>Nom du Centre:</b> {row['NOM_CENTRE']}<br><b>Nom du chef:</b> {row['NOM_CHEF']}<br><b>Nom du POP:</b> {row['NOM_POP']}<br>"
+        folium.Marker(location=[row['LATITUDE'], row['LONGITUDE']], popup=folium.Popup(popup_text, max_width=100)).add_to(m)
 
-        # Afficher la carte Folium dans Streamlit
-        folium_static(m)
+    # Afficher la carte Folium dans Streamlit
+    folium_static(m)
 
-    with col2:
-        # Liste déroulante pour sélectionner une POP
-        selected_pop = st.selectbox("Sélectionnez une POP", df['NOM_POP'].unique())
 
-        # Filtrer les centres en fonction de la POP sélectionnée
-        filtered_centers = df[df['NOM_POP'] == selected_pop][['NOM_CENTRE', 'NOM_CHEF']]
+    # Liste déroulante pour sélectionner une POP
+    selected_pop = st.selectbox("Sélectionnez une POP", df['NOM_POP'].unique())
 
-        # Afficher la liste des centres correspondants avec le nom du chef
-        st.write("Centres correspondants à la POP sélectionnée :")
-        st.write(filtered_centers)
+    # Filtrer les centres en fonction de la POP sélectionnée
+    filtered_centers = df[df['NOM_POP'] == selected_pop][['NOM_CENTRE', 'NOM_CHEF']]
+
+    # Afficher la liste des centres correspondants avec le nom du chef
+    st.write("Centres correspondants à la POP sélectionnée :")
+    st.write(filtered_centers)
 
 
 

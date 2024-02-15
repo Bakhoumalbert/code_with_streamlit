@@ -6,25 +6,7 @@ import pandas as pd
 
 def static_formateur():
 
-    st.title("Statistiques sur les formateurs")
-    st.write("Cette page représente les statisques sur les formateurs")
-    params = {
-        "dbname": "REFERENTIEL_MFPAI",
-        "user": "postgres",
-        "password": "ASB2101ab",
-        "host": "localhost",
-        "port": "5435"
-    }
-    requet_formateur = "SELECT * FROM \"FORMATION_PROF_DWH\".\"DIM_FORMATEUR\";"
-
-    try:
-        df2 = ConnectAndQuery(requet_formateur, params)
-        
-
-    except Exception as e:
-        st.error(f"Erreur lors de la récupération des données : {e}")
-        return None
-
+    df2 = pd.read_csv("data/formateur.csv")
     # 1. Répartition par centre de formation
     nbre_formateur = df2['ID_FORMATEUR'].nunique()
     

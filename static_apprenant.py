@@ -9,22 +9,9 @@ def static_apprenant():
 
     st.title("Statistiques des apprenants")
     st.write("Cette page représente les statisques sur les apprenants")
-    params = {
-        "dbname": "REFERENTIEL_MFPAI",
-        "user": "postgres",
-        "password": "ASB2101ab",
-        "host": "localhost",
-        "port": "5435"
-    }
-    requet_apprenant = "SELECT * FROM \"FORMATION_PROF_DWH\".\"DIM_APPRENANT\";"
     
-    try:
-        df1 = ConnectAndQuery(requet_apprenant, params)
-        
-    except Exception as e:
-        st.error(f"Erreur lors de la récupération des données : {e}")
-        return None
-    
+    df1 = pd.read_csv("data/apprenant.csv")
+
     st.write(df1)
 
     col1, col2 = st.columns((1, 1)) 
