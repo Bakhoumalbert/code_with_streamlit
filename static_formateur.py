@@ -1,5 +1,4 @@
 import streamlit as st
-from connect_DB import  ConnectAndQuery
 import plotly.express as px
 import pandas as pd
 

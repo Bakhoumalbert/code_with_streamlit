@@ -1,9 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import folium
-from streamlit_folium import folium_static
-from connect_DB import  ConnectAndQuery
 
 def static_apprenant():
 
