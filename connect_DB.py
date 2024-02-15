@@ -34,6 +34,15 @@ def ConnectAndQuery(requet, params):
     except (Exception, psycopg2.Error) as error:
         print("Erreur lors de la connexion à PostgreSQL:", error)
 
-if __name__ == "__main__":
-    ConnectAndQuery()
+requet_formateur = "SELECT * FROM \"FORMATION_PROF_DWH\".\"DIM_FORMATEUR\";"
 
+params = {
+        "dbname": "REFERENTIEL_MFPAI",
+        "user": "postgres",
+        "password": "ASB2101ab",
+        "host": "localhost",
+        "port": "5435"
+    }
+df = ConnectAndQuery(requet_formateur, params)
+
+print(df)

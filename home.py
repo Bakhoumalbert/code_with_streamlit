@@ -1,12 +1,8 @@
 import streamlit as st
-# import folium
-import json
+import folium
 import psycopg2
 import pandas as pd
 from streamlit_folium import folium_static
-from dashboard import Dashboard
-import matplotlib.pyplot as plt
-import seaborn as sns
 import plotly.express as px
 
 # Connexion à la base de données PostgreSQL
@@ -52,16 +48,6 @@ def DfToGeoJson():
         "port": "5435"
     }
     requet_centre = "SELECT * FROM \"FORMATION_ODS\".\"ODS_CENTRE_FP\";"
-    requet_apprenant = "SELECT * FROM \"FORMATION_PROF_DWH\".\"DIM_APPRENANT\";"
-
-
-    try:
-        df1 = ConnectAndQuery(requet_apprenant, params)
-
-
-    except Exception as e:
-        st.error(f"Erreur lors de la récupération des données : {e}")
-        return None
 
     try:
         df = ConnectAndQuery(requet_centre, params)
@@ -89,7 +75,7 @@ def DfToGeoJson():
                 "features": features
             }
 
-            return (geojson_data, df, df1)
+            return (geojson_data, df)
 
         else:
             st.error("Aucune donnée disponible.")
@@ -98,6 +84,56 @@ def DfToGeoJson():
         st.error(f"Erreur lors de la récupération des données : {e}")
         return None
 
+
+def config_map(df):
+    # Coordonnées centrales pour centrer la carte
+    map_center = [df['LATITUDE'].mean(), df['LONGITUDE'].mean()]
+
+    # Création de la carte
+    m = folium.Map(location=map_center, zoom_start=6.5)
+
+    # Ajout des marqueurs pour les centres et les POP en fonction des options sélectionnées
+
+    option = st.selectbox('Afficher les éléments :', ['Tout afficher', 'Centres de Formation', 'POP'])
+
+    # Mise à jour des cases à cocher en fonction de la sélection dans la liste déroulante
+    if option == 'Tout afficher':
+        show_centers = True
+        show_pops = True
+    elif option == 'Centres de Formation':
+        show_centers = True
+        show_pops = False
+    elif option == 'POP':
+        show_centers = False
+        show_pops = True
+    if show_centers:
+        for _, row in df.iterrows():
+            popup_html = f"""
+                <h4>{row['NOM_CENTRE']}</h4>
+                <p><b>Nom du chef:</b> {row['NOM_CHEF']}</p>
+                <p><b>Nom du POP:</b> {row['NOM_POP']}</p>
+            """
+            folium.Marker(
+                location=[row['LATITUDE'], row['LONGITUDE']],
+                popup=folium.Popup(popup_html, max_width=300),
+                icon=folium.Icon(color='blue')
+            ).add_to(m)
+
+    if show_pops:
+        for _, row in df.iterrows():
+            popup_html = f"""
+                <h4>{row['NOM_POP']}</h4>
+                <p><b>Nom du centre associé:</b> {row['NOM_CENTRE']}</p>
+                <p><b>Nom du chef:</b> {row['NOM_CHEF']}</p>
+            """
+            folium.Marker(
+                location=[row['LATITUDE_POP'], row['LONGITUDE_POP']],
+                popup=folium.Popup(popup_html, max_width=300),
+                icon=folium.Icon(color='green')
+            ).add_to(m)
+    # Affichage de la carte dans Streamlit
+    folium_static(m)
+    
 
 # Fonction pour afficher la page d'accueil
 def accueil():
@@ -118,17 +154,19 @@ def accueil():
     # st.subheader("Carte des centres")
     # my_map = folium.Map(location=[DEFAULT_LATITUDE, DEFAULT_LONGITUDE], zoom_start=6)
 
-    geojson_data, df1, df = DfToGeoJson()
+    geojson_data, df = DfToGeoJson()
 
+    # Affichage de la carte
+    config_map(df)
 
+    st.write("Liste des apprenants")
+    st.write(df)
     # 1. Répartition par centre de formation
-    nbre_centre = df1['NOM_CENTRE'].nunique()
-    nbre_apprenant = df['ID_APPRENANT'].nunique()
-    nbre_filiere = df['ID_FILIERE'].nunique()
-    nbre_diplome = df['ID_DIPLOME'].nunique()
+    nbre_centre = df['NOM_CENTRE'].nunique()
+    nbre_pop = df['NOM_POP'].nunique()
 
     # Création d'une disposition en grille pour les cartes
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2 = st.columns(2)
 
     # Carte 1 : Nombre de centres de formation
     with col1:
@@ -137,43 +175,10 @@ def accueil():
 
     # Carte 2 : Nombre total d'apprenants
     with col2:
-        st.write("Nombre total d'apprenants")
-        st.write(nbre_apprenant)
+        st.write("Nombre total de POP")
+        st.write(nbre_pop)
 
-    # Carte 3 : Nombre total de filières
-    with col3:
-        st.write("Nombre total de filières")
-        st.write(nbre_filiere)
-
-    # Carte 4 : Nombre total de diplômes
-    with col4:
-        st.write("Nombre total de diplômes")
-        st.write(nbre_diplome)
-
-
-    st.write(df)
-    # Créer une carte centrée sur les coordonnées moyennes
-    # map1 = folium.Map(location=[df1.iloc[:, 4].mean(), df1.iloc[:, 5].mean()], zoom_start=7)
-    # map2 = folium.Map(location=[df1.iloc[:, 6].mean(), df1.iloc[:, 7].mean()], zoom_start=7)
-
-    # # Ajouter des marqueurs pour chaque ligne du DataFrame sur la carte map1
-    # for index, row in df1.iterrows():
-    #     popup_text = f"<b>Nom du Centre:</b> {row.iloc[1]}<br><b>Nom du chef:</b> {row.iloc[2]}<br><b>Nom du POP:</b> {row.iloc[3]}<br>"
-    #     folium.Marker([row.iloc[4], row.iloc[5]], popup=folium.Popup(popup_text, max_width=300)).add_to(map1)
-
-    # # Ajouter des marqueurs pour chaque ligne du DataFrame sur la carte map2
-    # for index, row in df1.iterrows():
-    #     popup_text = f"<b>Nom du Centre:</b> {row.iloc[1]}<br><b>Nom du chef:</b> {row.iloc[2]}<br><b>Nom du POP:</b> {row.iloc[3]}<br>"
-    #     folium.Marker([row.iloc[6], row.iloc[7]], popup=folium.Popup(popup_text, max_width=300)).add_to(map2)
-
-    # # Ajouter une légende pour différencier les deux types de points
-    # folium.LayerControl().add_to(map1)
-    # folium.LayerControl().add_to(map2)
-
-    # # Afficher la carte avec Streamlit
-    # folium_static(map1)
-    # folium_static(map2)
-
+    
     # Créer une fonction pour générer la carte
     # Fonction pour créer la carte interactive
     # def create_map(data, location_column, popup_column):
@@ -225,12 +230,12 @@ def accueil():
     endDate = pd.to_datetime(df["DT_INSERTION"]).max()  # Correction de la valeur de endDate, max() au lieu de min()
 
     with col1:
-        date1 = st.date_input("Start Date", startDate)
+        st.date_input("Start Date", startDate)
 
-    st.markdown("&nbsp;" * 10)
+    # st.markdown("&nbsp;" * 10)
 
     with col2:
-        date2 = st.date_input("End Date", endDate)
+        st.date_input("End Date", endDate)
 
     # with col1:
     #     st.subheader("Filiere par secteur")
@@ -241,153 +246,35 @@ def accueil():
     couleurs = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
 
     with col1:
-        # Création du graphique interactif avec Plotly Express
-        fig = px.bar(df['LB_SECTEUR'].value_counts(), 
-                    x=df['LB_SECTEUR'].value_counts().index, 
-                    y=df['LB_SECTEUR'].value_counts(),
-                    labels={'x': 'Secteur', 'y': "Nombre d'apprenants"},
-                    title='Répartition des apprenants par secteur',
-                    color=df['LB_SECTEUR'].value_counts().index)
-        # Affichage du graphique interactif dans Streamlit
-        st.plotly_chart(fig)
+        # Créer une liste déroulante pour sélectionner la population (POP)
+        selected_pop = st.selectbox("Sélectionner le POP", df['NOM_POP'].unique())
+
+        # Filtrer les données en fonction de la population sélectionnée
+        filtered_data = df[df['NOM_POP'] == selected_pop]
+
+        # Créer la carte Folium
+        m = folium.Map(location=[filtered_data['LATITUDE'].mean(), filtered_data['LONGITUDE'].mean()], zoom_start=12)
+
+        # Ajouter les emplacements des centres sur la carte
+        for index, row in filtered_data.iterrows():
+            popup_text = f"<b>Nom du Centre:</b> {row['NOM_CENTRE']}<br><b>Nom du chef:</b> {row['NOM_CHEF']}<br><b>Nom du POP:</b> {row['NOM_POP']}<br>"
+            folium.Marker(location=[row['LATITUDE'], row['LONGITUDE']], popup=folium.Popup(popup_text, max_width=300)).add_to(m)
+
+        # Afficher la carte Folium dans Streamlit
+        folium_static(m)
 
     with col2:
-        #st.title('Répartition des apprenants par sexe')
-        # Création du graphique interactif avec Plotly Express
-        fig = px.pie(df['SEXE'].value_counts(), 
-                    names=df['SEXE'].value_counts().index, 
-                    values=df['SEXE'].value_counts(),
-                    title='Répartition des apprenants par sexe',
-                    hole=0.5,
-                    color=df['SEXE'].unique(),  # Utilisation des couleurs définies
-                    color_discrete_map={k: c for k, c in zip(df['SEXE'].unique(), couleurs)})  # Attribution des couleurs
+        # Liste déroulante pour sélectionner une POP
+        selected_pop = st.selectbox("Sélectionnez une POP", df['NOM_POP'].unique())
 
-        # Personnalisation du graphique
-        fig.update_traces(textinfo="label+percent", insidetextorientation="radial")
+        # Filtrer les centres en fonction de la POP sélectionnée
+        filtered_centers = df[df['NOM_POP'] == selected_pop][['NOM_CENTRE', 'NOM_CHEF']]
 
-        # Affichage du graphique interactif dans Streamlit
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col1:
-        #st.title('Répartition des apprenants par Diplôme')
-        # Création du graphique interactif avec Plotly Express
-        fig = px.bar(df['LB_DIPLOME'].value_counts(), 
-                    x=df['LB_DIPLOME'].value_counts().index, 
-                    y=df['LB_DIPLOME'].value_counts(),
-                    labels={'x': 'Diplôme', 'y': "Nombre d'apprenants"},
-                    title='Répartition des apprenants par diplôme',
-                    color=df['LB_DIPLOME'].unique(),  # Utilisation des couleurs définies
-                    color_discrete_map={k: c for k, c in zip(df['LB_DIPLOME'].unique(), couleurs)})  # Attribution des couleurs
-        # Affichage du graphique interactif dans Streamlit
-        st.plotly_chart(fig)
-
-   
-
-    
-    # Création du graphique interactif avec Plotly Express
-    fig = px.bar(df['LB_FILIERE'].value_counts(), 
-                y=df['LB_FILIERE'].value_counts().index,  # Inversion de x et y pour afficher horizontalement
-                x=df['LB_FILIERE'].value_counts(),
-                labels={'x': "Nombre d'apprenants", 'y': 'Filière'},
-                title='Répartition des apprenants par filière',
-                color=df['LB_FILIERE'].unique(),  # Utilisation des couleurs définies
-                color_discrete_map={k: c for k, c in zip(df['LB_FILIERE'].unique(), couleurs)}) 
-
-    # Supprimer la légende
-    fig.update_layout(showlegend=False)
-
-    # Affichage du graphique interactif dans Streamlit
-    st.plotly_chart(fig)
+        # Afficher la liste des centres correspondants avec le nom du chef
+        st.write("Centres correspondants à la POP sélectionnée :")
+        st.write(filtered_centers)
 
 
-    # Liste déroulante pour sélectionner la répartition
-    repartition_selectionnee = st.selectbox("Sélectionnez une répartition :", ["Diplôme", "Genre", "Secteur d'activité", "Filière"])
-
-    # Afficher les statistiques en fonction de la répartition sélectionnée
-    if repartition_selectionnee == "Diplôme":
-        fig = px.bar(df, x='LB_DIPLOME', color="LB_DIPLOME", title='Répartition par diplôme')
-    elif repartition_selectionnee == "Genre":
-        fig = px.bar(df, x='SEXE', color="SEXE", title='Répartition par genre')
-    elif repartition_selectionnee == "Secteur d'activité":
-        fig = px.bar(df, x='LB_SECTEUR', color="LB_SECTEUR",title='Répartition par secteur d\'activité')
-    elif repartition_selectionnee == "Filière":
-        fig = px.bar(df, x='LB_FILIERE', color="LB_FILIERE",title='Répartition par filière')
-    
-    # # Afficher les statistiques
-    # st.write(stats)
-    # Afficher le diagramme en barres  
-    st.plotly_chart(fig, use_container_width=True)
-
-    col6, col7 = st.columns((1, 1)) 
-
-    with col6:
-        # Afficher le diagramme interactif en barres des secteurs en fonction des filières
-        st.subheader("Secteurs en fonction des filières")
-        fig = px.histogram(df, x='LB_FILIERE', color='LB_SECTEUR', title='Secteurs en fonction des filières')
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col7:
-        # Afficher le diagramme interactif en barres de la répartition des diplômes des apprenants
-        st.subheader("Répartition des diplômes des apprenants")
-        fig = px.histogram(df, x='LB_DIPLOME', color="LB_DIPLOME", title='Répartition des diplômes des apprenants')
-        st.plotly_chart(fig, use_container_width=True)
-
-    with col6:
-        # Afficher le diagramme interactif circulaire de la répartition des apprenants par sexe
-        st.subheader("Répartition des apprenants par secteur")
-        fig = px.pie(df, names='LB_SECTEUR', title='Répartition des apprenants par sexe')
-        st.plotly_chart(fig, use_container_width=True)
-    with col7:
-        # Afficher le diagramme interactif en barres du nombre d'apprenants par filière
-        st.subheader("Nombre d'apprenants par filière")
-        fig = px.histogram(df, x='LB_FILIERE', color="LB_FILIERE", title='Nombre d\'apprenants par filière')
-        st.plotly_chart(fig, use_container_width=True)
-
-
-
-# Fonction pour afficher la première page
-def page_1():
-    st.title("Page 1")
-    st.write("Contenu de la première page")
-
-# Fonction pour afficher la deuxième page
-def page_2():
-    st.title("Page 2")
-    st.write("Contenu de la deuxième page")
-
-# Fonction pour afficher la troisième page
-def page_3():
-    st.title("Page 3")
-    st.write("Contenu de la troisième page")
-
-# Fonction principale pour gérer la navigation
-def main():
-
-    st.set_page_config(page_title='SWAST - Handover Delays',  layout='wide', page_icon=":bar_chart:")
-    st.sidebar.title("Menu de navigation")
-    pages = {
-        "Accueil": accueil,
-        "Page 1": Dashboard,
-        "Page 2": page_2,
-        "Page 3": page_3
-    }
-    selection = st.sidebar.radio("Aller à", list(pages.keys()), index=0)
-
-    page = pages[selection]
-    page()
-
-    st.markdown(
-        """
-        <style>
-        .sidebar .block-container {
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
 
 if __name__ == "__main__":
-    main()
+    accueil()
