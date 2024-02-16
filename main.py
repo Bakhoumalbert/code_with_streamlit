@@ -10,7 +10,7 @@ def config_map(df):
 
     
     # Coordonnées centrales pour centrer la carte
-    map_center = [df['LATITUDE'].mean(), df['LONGITUDE'].mean()]
+    map_center = [df['LATITUDE'].mean(), df['LONGITUDE'].mean()+2]
 
     # Création de la carte
     m = folium.Map(location=map_center, zoom_start=6.5)
@@ -55,7 +55,7 @@ def config_map(df):
                 icon=folium.Icon(color='green')
             ).add_to(m)
     # Affichage de la carte dans Streamlit
-    folium_static(m)
+    folium_static(m, width=920, height=600)
     
 
 # Fonction pour afficher la page d'accueil
