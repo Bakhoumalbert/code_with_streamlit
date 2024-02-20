@@ -1,8 +1,10 @@
 folium
 pandas
 streamlit-folium
+streamlit-authenticator
 streamlit
 plotly
 pandas
 psycopg2
 openpyxl
+
