@@ -1,10 +1,16 @@
 import streamlit as st
-import folium
 import pandas as pd
+import folium
 from streamlit_folium import folium_static
+
+
+df = pd.read_csv("data/ods_centre.csv", encoding="utf-8")
+df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
+df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
 
 def config_map(df):
 
+    # Définition du centre de la carte (latitude, longitude et zoom) en fonction  de la moyenne des données
     map_center = [df['LATITUDE'].mean(), df['LONGITUDE'].mean()]
 
     #Création de la carte
@@ -72,7 +78,7 @@ def config_map(df):
     )
 
     # Afficher la carte dans Streamlit
-    folium_static(m, width=1200, height=800)
+    folium_static(m)
 
 
 # Fonction d'affichage des centres en fonction des pop
@@ -83,33 +89,45 @@ def centre_pop(df):
     # Filtrer les données en fonction de la population sélectionnée
     filtered_data = df[df['NOM_POP'] == selected_pop]
 
+    
+    
+    centers_string = ", ".join(filtered_data['NOM_CENTRE'])
+    # Boucler à travers les éléments de la liste et les ajouter comme des éléments de liste à la liste HTML
+    st.markdown(
+        f"<h3 style='font-size: 20px; color: #007bff; font-weight: bold;'>Centres de formation et Lycée Technique rattachés au POP  :  {centers_string}</h3>",
+        unsafe_allow_html=True
+    )
+
     # Créer la carte Folium
     m = folium.Map(location=[filtered_data['LATITUDE'].mean(), filtered_data['LONGITUDE'].mean()], zoom_start=10)
 
     # Ajouter les emplacements des centres sur la carte
     for index, row in filtered_data.iterrows():
         popup_text = f"<b>Nom du Centre:</b> {row['NOM_CENTRE']}<br><b>Nom du chef:</b> {row['NOM_CHEF']}<br><b>Nom du POP:</b> {row['NOM_POP']}<br>"
-        folium.Marker(location=[row['LATITUDE'], row['LONGITUDE']], popup=folium.Popup(popup_text, max_width=100)).add_to(m)
+        folium.Marker(location=[row['LATITUDE'], row['LONGITUDE']], popup=folium.Popup(popup_text, max_width=100), icon=folium.Icon(color='blue')).add_to(m)
+    popup_text = f"<b>Nom du POP:</b> {filtered_data.iloc[0]['NOM_POP']}"
+    folium.Marker(location=[filtered_data.iloc[0]['LATITUDE_POP'], 
+                            filtered_data.iloc[0]['LONGITUDE_POP']], 
+                            popup=folium.Popup(popup_text, max_width=100), 
+                            icon=folium.Icon(color='green')
+                            ).add_to(m)
 
     # Afficher la carte Folium dans Streamlit
-    folium_static(m, width=1200, height=800)
+    folium_static(m, width=1200, height=600)
 
+# Fonction principale pour gérer la navigation
+def main():
 
-
-# Fonction pour afficher la page d'accueil
-def accueil():
-
-    # st.set_page_config(page_title="MFPAI Reporting", page_icon=":bar_chart:", layout="wide")
-
-    st.title(":bar_chart: Application Reporting MFPAI")
-    st.markdown('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
-    st.write("""
-        Cette application vous permet de visualiser différentes données.
-        Utilisez le menu de navigation pour sélectionner la page que vous souhaitez afficher.
+    st.subheader("""
+    """)
+    #st.set_page_config(page_title="MFPAI Reporting", page_icon=":bar_chart:", layout="wide")
+    st.title(":bar_chart: **Ministère de la Formation Professionnelle, de l'Apprentissat et de l’Insertion (MFPAI)**")
+    #st.markdown('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
+    
+    st.subheader("""
+             **Application web dédiée à l’analyse et au reporting des indicateurs sur les apprentissages, des formations, etc**
     """)
     st.write("------------------------------------------")
-
-
 
     df = pd.read_csv("data/ods_centre.csv", encoding="utf-8")
     df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
@@ -121,39 +139,35 @@ def accueil():
     nbre_app = df1['ID_DIM_APPRENANT'].nunique()
     nbre_form = df2['ID_DIM_FORMATEUR'].nunique()
 
-
     # Création d'une disposition en grille pour les cartes
     col1, col2 = st.columns(2)
 
-    # Getting the min and max
-    startDate = pd.to_datetime(df["DT_INSERTION"]).min()
-    endDate = pd.to_datetime(df["DT_INSERTION"]).max()  # Correction de la valeur de endDate, max() au lieu de min()
-    
+    # # Getting the min and max
+    # startDate = pd.to_datetime(df["DT_INSERTION"]).min()
+    # endDate = pd.to_datetime(df["DT_INSERTION"]).max()
 
-    with col1:
-        st.date_input("Date de Début", startDate)
+    # with col1:
+    #     st.date_input("Date de Début", startDate)
 
-    # st.markdown("&nbsp;" * 10)
-
-    with col2:
-        st.date_input("Date de dernier mise à jour", endDate)
+    # with col2:
+    #     st.date_input("Date de dernier mise à jour", endDate)
     
     # Carte 1 : Nombre de centres de formation
     with col1:
+        #st.write("-------------------")
+        st.markdown("<h3 style='color: #ff5733; text-align: center;'>Nombre d'apprennant</h3>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 30px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_app}</span></p>", unsafe_allow_html=True)
         st.write("-------------------")
-        st.markdown("<h2 style='color: #ff5733; text-align: center;'>Nombre d'apprennant</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-size: 40px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_app}</span></p>", unsafe_allow_html=True)
-        st.write("-------------------")
-        st.markdown("<h2 style='color: #ff5733; text-align: center;'>Nombre de centre de formation</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-size: 40px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_centre}</span></p>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #ff5733; text-align: center;'>Nombre de centre de formation</h3>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 30px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_centre}</span></p>", unsafe_allow_html=True)
 
     with col2:
+        #st.write("-------------------")
+        st.markdown("<h3 style='color: #ff5733; text-align: center;'>Nombre de formateur</h3>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 30px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_form}</span></p>", unsafe_allow_html=True)
         st.write("-------------------")
-        st.markdown("<h2 style='color: #ff5733; text-align: center;'>Nombre de formateur</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-size: 40px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_form}</span></p>", unsafe_allow_html=True)
-        st.write("-------------------")
-        st.markdown("<h2 style='color: #ff5733; text-align: center;'>Nombre de POP</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-size: 40px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_pop}</span></p>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: #ff5733; text-align: center;'>Nombre de POP</h3>", unsafe_allow_html=True)
+        st.markdown(f"<p style='font-size: 30px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_pop}</span></p>", unsafe_allow_html=True)
 
     
     # Affichage de la carte
@@ -163,26 +177,14 @@ def accueil():
     st.write("------------------------------------------")
     
     st.subheader("Liste des centre de formation")
-    st.write(df)
+    st.write(df.iloc[:,:8])
 
     st.write("------------------------------------------")
     # Affichage des centres en fonction des pop
     centre_pop(df)
 
     st.write("------------------------------------------")
-    # Liste déroulante pour sélectionner une POP
-    selected_pop = st.selectbox("Sélectionnez une POP", df['NOM_POP'].unique())
-
-    # Filtrer les centres en fonction de la POP sélectionnée
-    filtered_centers = df[df['NOM_POP'] == selected_pop][['NOM_CENTRE', 'NOM_CHEF']]
-
-    # Afficher la liste des centres correspondants avec le nom du chef
-    st.write("Centres correspondants à la POP sélectionnée :")
-    st.write(filtered_centers)
-    st.write("------------------------------------------")
-
-
 
 
 if __name__ == "__main__":
-    accueil()
+    main()
