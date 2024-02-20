@@ -2,11 +2,45 @@ import streamlit as st
 import pandas as pd
 import folium
 from streamlit_folium import folium_static
+import yaml
+from yaml.loader import SafeLoader
+import streamlit_authenticator as stauth
+
+def authentification():
+    # Vérifier si l'utilisateur est déjà authentifié
+    if st.session_state.get("authenticated", False):
+        return True
+    
+    try:
+        with open('credential.yaml') as file:
+            config = yaml.load(file, Loader=SafeLoader)
+
+        authenticator = stauth.Authenticate(
+            config['credentials'],
+            config['cookie']['name'],
+            config['cookie']['key'],
+            config['cookie']['expiry_days'],
+            config['preauthorized']
+        )
+
+        authenticator.login()
+
+        if st.session_state["authentication_status"]:
+            authenticator.logout("Déconnexion", "sidebar")
+            st.sidebar.write(f'Bienvenue *{st.session_state["name"]}*')
+            home_page()
+        elif st.session_state["authentication_status"] is False:
+            st.error('Utilisateur ou mot de passe incorrect')
+        elif st.session_state["authentication_status"] is None:
+            st.warning('Veiller saisir le nom d\'utilisateur et le mot de passe')
 
 
-df = pd.read_csv("data/ods_centre.csv", encoding="utf-8")
-df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
-df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
+    except FileNotFoundError:
+        st.error("Erreur: fichier credential.yaml introuvable")
+    except Exception as e:
+        st.error(f"Erreur: {e}")
+
+    return False
 
 def config_map(df):
 
@@ -115,8 +149,7 @@ def centre_pop(df):
     # Afficher la carte Folium dans Streamlit
     folium_static(m)
 
-# Fonction principale pour gérer la navigation
-def main():
+def home_page():
 
     st.subheader("""
     """)
@@ -127,11 +160,13 @@ def main():
     st.subheader("""
              **Application web dédiée à l’analyse et au reporting des indicateurs sur les apprentissages, des formations, etc**
     """)
+
+    
     st.write("------------------------------------------")
 
-    df = pd.read_csv("data/ods_centre.csv", encoding="utf-8")
-    df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
-    df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
+    df = st.session_state.df = pd.read_csv("data/ods_centre.csv", encoding="utf-8")
+    df1 = st.session_state.df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
+    df2 = st.session_state.df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
 
     # 1. Répartition par centre de formation
     nbre_centre = df['NOM_CENTRE'].nunique()
@@ -186,5 +221,15 @@ def main():
     st.write("------------------------------------------")
 
 
+# Fonction principale pour gérer la navigation
+def main():
+    authenticated = False
+    
+    # Authentification
+    if not authenticated:
+        authenticated = authentification()
+    else:
+        home_page()
+    
 if __name__ == "__main__":
     main()

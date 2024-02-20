@@ -1,18 +1,19 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from Accueil import df2
+
+df2 = st.session_state.df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
 
 def static_formateur():
 
     st.title("Statistiques des formateurs")
     st.write("Cette page représente les statisques sur les formateurs")
     
-    # 1. Répartition par centre de formation
-    nbre_formateur = df2['ID_FORMATEUR'].nunique()
     
-    st.write("nombre de formateur : ", nbre_formateur)
-    st.write(df2)
+    # Affichage du nombre de formateur
+    nbre_formateur = df2['ID_FORMATEUR'].nunique()
+    st.markdown(f"<h3 style='color: #ff5733;'>Nombre de formateur : <span style='color: #007bff; font-weight: bold;'>{nbre_formateur}</span></h3>", unsafe_allow_html=True)    
+      
 
     col1, col2 = st.columns((1, 1)) 
 
@@ -23,11 +24,13 @@ def static_formateur():
     endDate = pd.to_datetime(df2["DT_INSERTION"]).max()  # Correction de la valeur de endDate, max() au lieu de min()
 
     with col1:
+        st.write("------------------------------")
         st.date_input("Start Date", startDate)
 
     st.markdown("&nbsp;" * 10)
 
     with col2:
+        st.write("------------------------------")
         st.date_input("End Date", endDate)
 
       
@@ -35,6 +38,7 @@ def static_formateur():
     couleurs = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
 
     with col1:
+        st.write("------------------------------")
         # Création du graphique interactif avec Plotly Express
         fig = px.bar(df2['STATUS'].value_counts(), 
                     x=df2['STATUS'].value_counts().index, 
@@ -46,6 +50,7 @@ def static_formateur():
         st.plotly_chart(fig)
 
     with col2:
+        st.write("------------------------------")
         # Création du graphique interactif avec Plotly Express
         fig = px.pie(df2['SEXE'].value_counts(), 
                     names=df2['SEXE'].value_counts().index, 
@@ -61,28 +66,29 @@ def static_formateur():
         # Affichage du graphique interactif dans Streamlit
         st.plotly_chart(fig, use_container_width=True)
 
-    with col1:
-        #st.title('Répartition des formateur par Diplôme')
-        # Création du graphique interactif avec Plotly Express
-        fig = px.bar(df2['GRADE_ECHELON'].value_counts(), 
-                    x=df2['GRADE_ECHELON'].value_counts().index, 
-                    y=df2['GRADE_ECHELON'].value_counts(),
-                    labels={'x': 'Grade', 'y': "Nombre d'formateur"},
-                    title='Répartition des formateur par diplôme',
-                    color=df2['GRADE_ECHELON'].unique(),  # Utilisation des couleurs définies
-                    color_discrete_map={k: c for k, c in zip(df2['GRADE_ECHELON'].unique(), couleurs)})  # Attribution des couleurs
-        # Affichage du graphique interactif dans Streamlit
-        st.plotly_chart(fig)
+    st.write("------------------------------")
+    #st.title('Répartition des formateur par Diplôme')
+    # Création du graphique interactif avec Plotly Express
+    fig = px.bar(df2['GRADE_ECHELON'].value_counts(), 
+                x=df2['GRADE_ECHELON'].value_counts().index, 
+                y=df2['GRADE_ECHELON'].value_counts(),
+                labels={'x': 'Grade', 'y': "Nombre d'formateur"},
+                title='Répartition des formateur par Grade/Echelon',
+                color=df2['GRADE_ECHELON'].unique(),  # Utilisation des couleurs définies
+                color_discrete_map={k: c for k, c in zip(df2['GRADE_ECHELON'].unique(), couleurs)})  # Attribution des couleurs
+    # Affichage du graphique interactif dans Streamlit
+    st.plotly_chart(fig)
 
    
 
     
+    st.write("------------------------------")
     # Création du graphique interactif avec Plotly Express
     fig = px.bar(df2['CATEGORIE'].value_counts(), 
                 y=df2['CATEGORIE'].value_counts().index,  # Inversion de x et y pour afficher horizontalement
                 x=df2['CATEGORIE'].value_counts(),
                 labels={'x': "Nombre de formateur", 'y': 'Catégorie'},
-                title='Répartition des formateur par Centre de formation',
+                title='Répartition des formateur par Catégirie',
                 color=df2['CATEGORIE'].unique(),  # Utilisation des couleurs définies
                 color_discrete_map={k: c for k, c in zip(df2['CATEGORIE'].unique(), couleurs)}) 
 
@@ -93,8 +99,9 @@ def static_formateur():
     st.plotly_chart(fig)
 
 
+    st.write("------------------------------")
     # Liste déroulante pour sélectionner la répartition
-    repartition_selectionnee = st.selectbox("Sélectionnez une répartition :", ["Catégorie", "Status", "Grade/Echelon", "Centre de formation"])
+    repartition_selectionnee = st.selectbox("Sélectionnez une répartition :", ["Status", "Grade/Echelon", "Catégorie", "Centre de formation"])
 
     # Afficher les statistiques en fonction de la répartition sélectionnée
     if repartition_selectionnee == "Catégorie":
@@ -126,12 +133,14 @@ def static_formateur():
     #     st.plotly_chart(fig, use_container_width=True)
 
     with col6:
+        st.write("------------------------------")
         # Afficher le diagramme interactif circulaire de la répartition des formateur par sexe
         st.subheader("Répartition des formateur par Département")
         fig = px.pie(df2, names='DEPARTEMENT', title='Répartition des formateur par Département')
         st.plotly_chart(fig, use_container_width=True)
    
     with col7:
+        st.write("------------------------------")
         # Afficher le diagramme interactif en barres du nombre d'formateur par Centre de formation
         st.subheader("Nombre de formateur par Région")
         fig = px.histogram(df2, x='REGION', color="REGION", title='Nombre d\'formateur par Région')
