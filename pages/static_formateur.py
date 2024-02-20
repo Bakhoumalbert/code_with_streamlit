@@ -1,14 +1,13 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-
+from Accueil import df2
 
 def static_formateur():
 
     st.title("Statistiques des formateurs")
     st.write("Cette page représente les statisques sur les formateurs")
     
-    df2 = pd.read_csv("data/formateur.csv")
     # 1. Répartition par centre de formation
     nbre_formateur = df2['ID_FORMATEUR'].nunique()
     

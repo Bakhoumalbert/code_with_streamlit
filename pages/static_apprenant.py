@@ -1,13 +1,16 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from Accueil import df1
+
+st.write(df1)
 
 def static_apprenant():
 
     st.title("Statistiques des apprenants")
     st.write("Cette page représente les statisques sur les apprenants")
     
-    df1 = pd.read_csv("data/apprenant.csv")
+    
 
     st.write(df1)
 
