@@ -113,7 +113,7 @@ def centre_pop(df):
                             ).add_to(m)
 
     # Afficher la carte Folium dans Streamlit
-    folium_static(m, width=1200, height=600)
+    folium_static(m)
 
 # Fonction principale pour gérer la navigation
 def main():
