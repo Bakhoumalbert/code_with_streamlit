@@ -88,7 +88,7 @@ def static_formateur():
                 y=df2['CATEGORIE'].value_counts().index,  # Inversion de x et y pour afficher horizontalement
                 x=df2['CATEGORIE'].value_counts(),
                 labels={'x': "Nombre de formateur", 'y': 'Catégorie'},
-                title='Répartition des formateur par Catégirie',
+                title='Répartition des formateur par Catégorie',
                 color=df2['CATEGORIE'].unique(),  # Utilisation des couleurs définies
                 color_discrete_map={k: c for k, c in zip(df2['CATEGORIE'].unique(), couleurs)}) 
 
@@ -136,7 +136,7 @@ def static_formateur():
         st.write("------------------------------")
         # Afficher le diagramme interactif circulaire de la répartition des formateur par sexe
         st.subheader("Répartition des formateur par Département")
-        fig = px.pie(df2, names='DEPARTEMENT', title='Répartition des formateur par Département')
+        fig = px.pie(df2, names='DEPARTEMENT', title='Répartition des formateurs par Département')
         st.plotly_chart(fig, use_container_width=True)
    
     with col7:

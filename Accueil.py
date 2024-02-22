@@ -6,10 +6,10 @@ import yaml
 from yaml.loader import SafeLoader
 import streamlit_authenticator as stauth
 
+
 def authentification():
     # Vérifier si l'utilisateur est déjà authentifié
-    if st.session_state.get("authenticated", False):
-        return True
+    #   return True
     
     try:
         with open('credential.yaml') as file:
@@ -34,13 +34,13 @@ def authentification():
         elif st.session_state["authentication_status"] is None:
             st.warning('Veiller saisir le nom d\'utilisateur et le mot de passe')
 
-
     except FileNotFoundError:
         st.error("Erreur: fichier credential.yaml introuvable")
     except Exception as e:
         st.error(f"Erreur: {e}")
 
     return False
+
 
 def config_map(df):
 
@@ -151,8 +151,6 @@ def centre_pop(df):
 
 def home_page():
 
-    st.subheader("""
-    """)
     #st.set_page_config(page_title="MFPAI Reporting", page_icon=":bar_chart:", layout="wide")
     st.title(":bar_chart: **Ministère de la Formation Professionnelle, de l'Apprentissat et de l’Insertion (MFPAI)**")
     #st.markdown('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
@@ -230,6 +228,6 @@ def main():
         authenticated = authentification()
     else:
         home_page()
-    
+
 if __name__ == "__main__":
     main()

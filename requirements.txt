@@ -7,4 +7,3 @@ plotly
 pandas
 openpyxl
 streamlit_authenticator
-yaml
