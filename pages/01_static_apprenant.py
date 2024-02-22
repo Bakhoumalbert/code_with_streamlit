@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+from Accueil import authentification
 
 df1 = st.session_state.df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
 
@@ -127,4 +128,12 @@ def static_apprenant():
         st.plotly_chart(fig, use_container_width=True)
     
 if __name__ == "__main__":
-    static_apprenant()
+    
+    authenticated = False
+    
+    # Authentification
+    if not authenticated:
+        authenticated = authentification()
+    else:
+        static_apprenant()
+    
