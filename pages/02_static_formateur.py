@@ -1,9 +1,8 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
-from Accueil import authentification
 
-df2 = st.session_state.df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
+df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
 
 def static_formateur():
 
@@ -27,8 +26,6 @@ def static_formateur():
     with col1:
         st.write("------------------------------")
         st.date_input("Start Date", startDate)
-
-    st.markdown("&nbsp;" * 10)
 
     with col2:
         st.write("------------------------------")
@@ -148,10 +145,4 @@ def static_formateur():
         st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
-    authenticated = False
-    
-    # Authentification
-    if not authenticated:
-        authenticated = authentification()
-    else:
-        static_formateur()
+    static_formateur()

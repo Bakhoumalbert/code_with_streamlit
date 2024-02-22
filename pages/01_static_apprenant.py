@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from Accueil import authentification
 
-df1 = st.session_state.df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
+df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
 
 def static_apprenant():
     st.title("Statistiques des apprenants")
@@ -126,14 +125,6 @@ def static_apprenant():
         # Afficher le diagramme interactif en barres de la répartition des diplômes des apprenants
         fig = px.histogram(df1, x='LB_DIPLOME', color="LB_DIPLOME", title='Répartition des diplômes des apprenants')
         st.plotly_chart(fig, use_container_width=True)
-    
+
 if __name__ == "__main__":
-    
-    authenticated = False
-    
-    # Authentification
-    if not authenticated:
-        authenticated = authentification()
-    else:
-        static_apprenant()
-    
+    static_apprenant()

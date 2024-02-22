@@ -5,12 +5,13 @@ from streamlit_folium import folium_static
 import yaml
 from yaml.loader import SafeLoader
 import streamlit_authenticator as stauth
+import os
 
 
 def authentification():
     # Vérifier si l'utilisateur est déjà authentifié
-    #   return True
-    
+    if st.session_state.get("authenticated", False):
+        return True
     try:
         with open('credential.yaml') as file:
             config = yaml.load(file, Loader=SafeLoader)
@@ -24,7 +25,6 @@ def authentification():
         )
 
         authenticator.login()
-
         if st.session_state["authentication_status"]:
             authenticator.logout("Déconnexion", "sidebar")
             st.sidebar.write(f'Bienvenue *{st.session_state["name"]}*')
@@ -159,12 +159,11 @@ def home_page():
              **Application web dédiée à l’analyse et au reporting des indicateurs sur les apprentissages, des formations, etc**
     """)
 
-    
-    st.write("------------------------------------------")
+    st.divider()
 
-    df = st.session_state.df = pd.read_csv("data/ods_centre.csv", encoding="utf-8")
-    df1 = st.session_state.df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
-    df2 = st.session_state.df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
+    df = pd.read_csv("data/ods_centre.csv", encoding="utf-8")
+    df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
+    df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
 
     # 1. Répartition par centre de formation
     nbre_centre = df['NOM_CENTRE'].nunique()
@@ -190,7 +189,7 @@ def home_page():
         #st.write("-------------------")
         st.markdown("<h3 style='color: #ff5733; text-align: center;'>Nombre d'apprennant</h3>", unsafe_allow_html=True)
         st.markdown(f"<p style='font-size: 30px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_app}</span></p>", unsafe_allow_html=True)
-        st.write("-------------------")
+        st.divider()
         st.markdown("<h3 style='color: #ff5733; text-align: center;'>Nombre de centre de formation</h3>", unsafe_allow_html=True)
         st.markdown(f"<p style='font-size: 30px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_centre}</span></p>", unsafe_allow_html=True)
 
@@ -198,31 +197,31 @@ def home_page():
         #st.write("-------------------")
         st.markdown("<h3 style='color: #ff5733; text-align: center;'>Nombre de formateur</h3>", unsafe_allow_html=True)
         st.markdown(f"<p style='font-size: 30px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_form}</span></p>", unsafe_allow_html=True)
-        st.write("-------------------")
+        st.divider()
         st.markdown("<h3 style='color: #ff5733; text-align: center;'>Nombre de POP</h3>", unsafe_allow_html=True)
         st.markdown(f"<p style='font-size: 30px; text-align: center;'><span style='color: #007bff; font-weight: bold;'>{nbre_pop}</span></p>", unsafe_allow_html=True)
 
-    
+    st.divider()
     # Affichage de la carte
     config_map(df)
 
+    st.divider()
     df["DT_INSERTION"] = pd.to_datetime(df["DT_INSERTION"])
-    st.write("------------------------------------------")
+
     
     st.subheader("Liste des centre de formation")
     st.write(df.iloc[:,:8])
 
-    st.write("------------------------------------------")
+    st.divider()
     # Affichage des centres en fonction des pop
     centre_pop(df)
 
-    st.write("------------------------------------------")
-
+    # Divider
+    st.divider()
 
 # Fonction principale pour gérer la navigation
 def main():
     authenticated = False
-    
     # Authentification
     if not authenticated:
         authenticated = authentification()
