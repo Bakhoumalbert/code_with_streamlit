@@ -5,10 +5,12 @@ from streamlit_folium import folium_static
 import yaml
 from yaml.loader import SafeLoader
 import streamlit_authenticator as stauth
-import os
 
 
 def authentification():
+    
+    st.set_page_config(page_title="MFPAI Reporting", page_icon=":bar_chart:", layout="wide")
+
     # Vérifier si l'utilisateur est déjà authentifié
     if st.session_state.get("authenticated", False):
         return True
@@ -25,6 +27,7 @@ def authentification():
         )
 
         authenticator.login()
+
         if st.session_state["authentication_status"]:
             authenticator.logout("Déconnexion", "sidebar")
             st.sidebar.write(f'Bienvenue *{st.session_state["name"]}*')
@@ -112,7 +115,7 @@ def config_map(df):
     )
 
     # Afficher la carte dans Streamlit
-    folium_static(m)
+    folium_static(m, width=1200, height=700)
 
 
 # Fonction d'affichage des centres en fonction des pop
@@ -147,23 +150,23 @@ def centre_pop(df):
                             ).add_to(m)
 
     # Afficher la carte Folium dans Streamlit
-    folium_static(m)
+    folium_static(m, width=1200, height=700)
+
 
 def home_page():
 
     #st.set_page_config(page_title="MFPAI Reporting", page_icon=":bar_chart:", layout="wide")
     st.title(":bar_chart: **Ministère de la Formation Professionnelle, de l'Apprentissat et de l’Insertion (MFPAI)**")
     #st.markdown('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
-    
     st.subheader("""
              **Application web dédiée à l’analyse et au reporting des indicateurs sur les apprentissages, des formations, etc**
     """)
-
+  
     st.divider()
 
-    df = pd.read_csv("data/ods_centre.csv", encoding="utf-8")
-    df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
-    df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
+    df = st.session_state.df = pd.read_csv("data/ods_centre.csv", encoding="utf-8")
+    df1 = st.session_state.df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
+    df2 = st.session_state.df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
 
     # 1. Répartition par centre de formation
     nbre_centre = df['NOM_CENTRE'].nunique()
@@ -174,16 +177,6 @@ def home_page():
     # Création d'une disposition en grille pour les cartes
     col1, col2 = st.columns(2)
 
-    # # Getting the min and max
-    # startDate = pd.to_datetime(df["DT_INSERTION"]).min()
-    # endDate = pd.to_datetime(df["DT_INSERTION"]).max()
-
-    # with col1:
-    #     st.date_input("Date de Début", startDate)
-
-    # with col2:
-    #     st.date_input("Date de dernier mise à jour", endDate)
-    
     # Carte 1 : Nombre de centres de formation
     with col1:
         #st.write("-------------------")
@@ -207,7 +200,6 @@ def home_page():
 
     st.divider()
     df["DT_INSERTION"] = pd.to_datetime(df["DT_INSERTION"])
-
     
     st.subheader("Liste des centre de formation")
     st.write(df.iloc[:,:8])
@@ -222,6 +214,7 @@ def home_page():
 # Fonction principale pour gérer la navigation
 def main():
     authenticated = False
+    
     # Authentification
     if not authenticated:
         authenticated = authentification()

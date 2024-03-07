@@ -5,6 +5,7 @@ import plotly.express as px
 df1 = pd.read_csv("data/apprenant.csv", encoding= "utf-8")
 
 def static_apprenant():
+    st.set_page_config(page_title="MFPAI Reporting", page_icon=":bar_chart:", layout="wide")
     st.title("Statistiques des apprenants")
     st.subheader("Cette page représente les statisques sur les apprenants")
 
@@ -14,7 +15,7 @@ def static_apprenant():
         
     st.write(df1.iloc[:,:10])
 
-    st.write("----------------")
+    st.divider()
 
     col1,_ ,col2 = st.columns((3, 0.2, 3)) 
 
@@ -54,8 +55,6 @@ def static_apprenant():
         # Affichage du graphique interactif dans Streamlit
         st.plotly_chart(fig, use_container_width=True)
 
-
-
     # with col1:
     #     st.subheader("Filiere par secteur")
     #     fig = px.bar(secteur_df1, y="LB_FILIERE", x="LB_SECTEUR", text="LB_FILIERE", template="seaborn")
@@ -64,8 +63,7 @@ def static_apprenant():
     # Définition des couleurs pour les barres du graphique
 
 
-    st.write("----------------")
-    #st.title('Répartition des apprenants par Diplôme')
+    st.divider()
     # Création du graphique interactif avec Plotly Express
     fig = px.bar(df1['LB_DIPLOME'].value_counts(), 
                 x=df1['LB_DIPLOME'].value_counts().index, 
@@ -77,7 +75,7 @@ def static_apprenant():
     # Affichage du graphique interactif dans Streamlit
     st.plotly_chart(fig)
 
-    st.write("----------------")
+    st.divider()
     # Création du graphique interactif avec Plotly Express
     fig = px.bar(df1['LB_FILIERE'].value_counts(), 
                 y=df1['LB_FILIERE'].value_counts().index,  # Inversion de x et y pour afficher horizontalement
@@ -93,7 +91,7 @@ def static_apprenant():
     # Affichage du graphique interactif dans Streamlit
     st.plotly_chart(fig)
 
-    st.write("----------------")
+    st.divider()
     # Liste déroulante pour sélectionner la répartition
     repartition_selectionnee = st.selectbox("Sélectionnez une répartition :", ["Diplôme", "Genre", "Secteur d'activité", "Filière"])
 
@@ -113,7 +111,7 @@ def static_apprenant():
     col6, _,col7 = st.columns((3,0.2, 3)) 
 
     with col6:
-        st.write("----------------")
+        st.divider()
         # Calcul des valeurs pour le diagramme circulaire
         secteurs_counts = df1.groupby('LB_FILIERE')['LB_SECTEUR'].value_counts().reset_index(name='count')
         # Création du graphique circulaire avec Plotly Express
@@ -121,10 +119,10 @@ def static_apprenant():
         # Affichage du graphique interactif dans Streamlit avec une largeur de conteneur automatique
         st.plotly_chart(fig, use_container_width=True)
     with col7:
-        st.write("----------------")
+        st.divider()
         # Afficher le diagramme interactif en barres de la répartition des diplômes des apprenants
         fig = px.histogram(df1, x='LB_DIPLOME', color="LB_DIPLOME", title='Répartition des diplômes des apprenants')
         st.plotly_chart(fig, use_container_width=True)
-
+    
 if __name__ == "__main__":
     static_apprenant()

@@ -5,10 +5,9 @@ import pandas as pd
 df2 = pd.read_csv("data/formateur.csv", encoding= "utf-8")
 
 def static_formateur():
-
+    st.set_page_config(page_title="MFPAI Reporting", page_icon=":bar_chart:", layout="wide")
     st.title("Statistiques des formateurs")
     st.write("Cette page représente les statisques sur les formateurs")
-    
     
     # Affichage du nombre de formateur
     nbre_formateur = df2['ID_FORMATEUR'].nunique()
@@ -24,11 +23,11 @@ def static_formateur():
     endDate = pd.to_datetime(df2["DT_INSERTION"]).max()  # Correction de la valeur de endDate, max() au lieu de min()
 
     with col1:
-        st.write("------------------------------")
+        st.divider()
         st.date_input("Start Date", startDate)
 
     with col2:
-        st.write("------------------------------")
+        st.divider()
         st.date_input("End Date", endDate)
 
       
@@ -36,7 +35,7 @@ def static_formateur():
     couleurs = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2']
 
     with col1:
-        st.write("------------------------------")
+        st.divider()
         # Création du graphique interactif avec Plotly Express
         fig = px.bar(df2['STATUS'].value_counts(), 
                     x=df2['STATUS'].value_counts().index, 
@@ -48,7 +47,7 @@ def static_formateur():
         st.plotly_chart(fig)
 
     with col2:
-        st.write("------------------------------")
+        st.divider()
         # Création du graphique interactif avec Plotly Express
         fig = px.pie(df2['SEXE'].value_counts(), 
                     names=df2['SEXE'].value_counts().index, 
@@ -64,7 +63,7 @@ def static_formateur():
         # Affichage du graphique interactif dans Streamlit
         st.plotly_chart(fig, use_container_width=True)
 
-    st.write("------------------------------")
+    st.divider()
     #st.title('Répartition des formateur par Diplôme')
     # Création du graphique interactif avec Plotly Express
     fig = px.bar(df2['GRADE_ECHELON'].value_counts(), 
@@ -77,10 +76,7 @@ def static_formateur():
     # Affichage du graphique interactif dans Streamlit
     st.plotly_chart(fig)
 
-   
-
-    
-    st.write("------------------------------")
+    st.divider()
     # Création du graphique interactif avec Plotly Express
     fig = px.bar(df2['CATEGORIE'].value_counts(), 
                 y=df2['CATEGORIE'].value_counts().index,  # Inversion de x et y pour afficher horizontalement
@@ -97,7 +93,7 @@ def static_formateur():
     st.plotly_chart(fig)
 
 
-    st.write("------------------------------")
+    st.divider()
     # Liste déroulante pour sélectionner la répartition
     repartition_selectionnee = st.selectbox("Sélectionnez une répartition :", ["Status", "Grade/Echelon", "Catégorie", "Centre de formation"])
 
@@ -131,14 +127,14 @@ def static_formateur():
     #     st.plotly_chart(fig, use_container_width=True)
 
     with col6:
-        st.write("------------------------------")
+        st.divider()
         # Afficher le diagramme interactif circulaire de la répartition des formateur par sexe
         st.subheader("Répartition des formateur par Département")
         fig = px.pie(df2, names='DEPARTEMENT', title='Répartition des formateurs par Département')
         st.plotly_chart(fig, use_container_width=True)
    
     with col7:
-        st.write("------------------------------")
+        st.divider()
         # Afficher le diagramme interactif en barres du nombre d'formateur par Centre de formation
         st.subheader("Nombre de formateur par Région")
         fig = px.histogram(df2, x='REGION', color="REGION", title='Nombre d\'formateur par Région')
